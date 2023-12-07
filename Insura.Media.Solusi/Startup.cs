@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation.AspNetCore;
 using Insura.Media.Solusi.Common.Config;
+using Insura.Media.Solusi.Consumer;
 using Insura.Media.Solusi.Controllers.Extensions;
 using Insura.Media.Solusi.Exceptions;
 using Insura.Media.Solusi.Repository;
@@ -9,6 +10,9 @@ using Insura.Media.Solusi.Service.Impl;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.Yaml;
+using RabbitQueue.Configuration;
+using RabbitQueue.Connection;
+using RabbitQueue.Service;
 using System.Net;
 using System.Reflection;
 using System.Text.Json;
@@ -31,6 +35,7 @@ namespace Insura.Media.Solusi
         [Obsolete]
         public void ConfigureServices(IServiceCollection services)
         {
+            #region Common Config
             services.AddControllers()
                 .AddJsonOptions(options =>
                 {
@@ -40,7 +45,9 @@ namespace Insura.Media.Solusi
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
             services.AddMemoryCache();
+            #endregion
 
+            #region DB Configuration
             var dbConnection = new DbConnection();
             Configuration.Bind("dbConnection", dbConnection);
             services.RegisterDBConnection(dbConnection);
@@ -50,11 +57,32 @@ namespace Insura.Media.Solusi
                 var connectionString = provider.GetRequiredService<DbConnection>().ConnectionString;
                 options.UseSqlServer(connectionString);
             });
+            #endregion
 
+            #region Rabbit MQ
+            var rabbitConnection = new RabbitConnection();
+            Configuration.GetSection("rabbitConnection").Bind(rabbitConnection);
+            services.AddSingleton(rabbitConnection);
+
+            services.AddSingleton<IBus>(sp => RabbitHutch.CreateBus
+            (
+                rabbitConnection.hostName, 
+                rabbitConnection.hostPort, 
+                rabbitConnection.virtualHost, 
+                rabbitConnection.username, 
+                rabbitConnection.password
+            ));
+
+            services.AddHostedService<UserLogActivityConsumer>();
+            #endregion
+
+            #region Service
             services.AddScoped<IUserService, UserServiceImpl>();
             services.AddScoped<ICalculatorService, CalculatorServiceImpl>();
             services.AddScoped<ITaskService, TaskServiceImpl>();
+            #endregion
 
+            #region AutoMapper
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<AutoMapperProfile>();
@@ -62,8 +90,13 @@ namespace Insura.Media.Solusi
 
             var mapper = config.CreateMapper();
             services.AddSingleton(mapper);
+            #endregion
 
+            #region Fluent Validation
             services.AddFluentValidation(config => config.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
+            #endregion
+
+            #region CORS
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(builder =>
@@ -73,6 +106,7 @@ namespace Insura.Media.Solusi
                     builder.AllowAnyMethod();
                 });
             });
+            #endregion
 
         }
 

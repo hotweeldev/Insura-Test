@@ -11,5 +11,6 @@ namespace Insura.Media.Solusi.Repository
 
         public DbSet<Users> Users { get; set; }
         public DbSet<UserTask> UserTasks { get; set; }
+        public DbSet<UserLogActivity> UserLogActivities { get; set; }
     }
 }

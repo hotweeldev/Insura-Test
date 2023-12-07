@@ -1,2 +1,11 @@
 ﻿dbConnection:
   ConnectionString: "Server=localhost;Database=insura;Integrated Security=True;TrustServerCertificate=True"
+
+rabbitConnection:
+  hostName: "localhost"
+  queueName: "activity"
+  hostPort: 5672
+  virtualHost: "insura_vhost"
+  username: "user"
+  password: "password"
+

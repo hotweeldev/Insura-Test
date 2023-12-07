@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insura.Media.Solusi", "Insu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F920516D-6856-46BB-AB50-6FD61B49B2FB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitQueue", "RabbitQueue\RabbitQueue.csproj", "{AE9D19EF-4104-41F0-A4FA-30AB9D7AD5A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +19,10 @@ Global
 		{34A85C5F-8B09-4381-BF89-8685B439B5F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34A85C5F-8B09-4381-BF89-8685B439B5F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34A85C5F-8B09-4381-BF89-8685B439B5F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE9D19EF-4104-41F0-A4FA-30AB9D7AD5A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE9D19EF-4104-41F0-A4FA-30AB9D7AD5A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE9D19EF-4104-41F0-A4FA-30AB9D7AD5A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE9D19EF-4104-41F0-A4FA-30AB9D7AD5A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

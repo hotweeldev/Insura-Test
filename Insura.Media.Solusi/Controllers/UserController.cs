@@ -1,7 +1,10 @@
 ﻿using Insura.Media.Solusi.Common.Command;
 using Insura.Media.Solusi.Common.Query;
+using Insura.Media.Solusi.Models;
 using Insura.Media.Solusi.Service;
 using Microsoft.AspNetCore.Mvc;
+using RabbitQueue.Configuration;
+using RabbitQueue.Service;
 
 namespace Insura.Media.Solusi.Controllers
 {
@@ -10,9 +13,14 @@ namespace Insura.Media.Solusi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService userService;
-        public UserController(IUserService userService)
+        private readonly IBus busControl;
+        private readonly RabbitConnection rabbitConnection;
+
+        public UserController(IUserService userService, IBus busControl, RabbitConnection rabbitConnection)
         {
             this.userService = userService;
+            this.busControl = busControl;
+            this.rabbitConnection = rabbitConnection;
         }
 
         [HttpPost]
@@ -22,9 +30,22 @@ namespace Insura.Media.Solusi.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetUserPage([FromQuery] UserQuery query) 
+        public async Task<IActionResult> GetUserPage([FromQuery] UserQuery query) 
         {
-            return Ok(userService.GetUsersByPage(query));
+            var response = userService.GetUsersByPage(query);
+            if (response != null)
+            {
+                var logActivity = new CreateLogActivityCommand()
+                {
+                    Name = "System",
+                    Activity = $"Get User Pagination on page {response.Page} of {response.TotalPages}",
+                    Time = DateTime.Now,
+                };
+
+                await busControl.SendAsync(rabbitConnection.queueName, logActivity);
+            }
+
+            return Ok(response);
         }
 
         [HttpPut]

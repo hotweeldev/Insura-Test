@@ -13,6 +13,7 @@ namespace Insura.Media.Solusi.Service
             CreateMap<UserDto, Users>()
                 .ReverseMap();
             CreateMap<CreateTaskCommand, UserTask>();
+            CreateMap<CreateLogActivityCommand, UserLogActivity>();
         }
     }
 }
