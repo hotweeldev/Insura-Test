@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using FluentValidation.AspNetCore;
+using Insura.Media.Solusi.Common.Config;
+using Insura.Media.Solusi.Controllers.Extensions;
 using Insura.Media.Solusi.Exceptions;
 using Insura.Media.Solusi.Repository;
 using Insura.Media.Solusi.Service;
 using Insura.Media.Solusi.Service.Impl;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.Yaml;
 using System.Net;
 using System.Reflection;
 using System.Text.Json;
@@ -15,12 +18,15 @@ namespace Insura.Media.Solusi
 {
     public class Startup
     {
-        private readonly IConfiguration _configuration;
-
-        public Startup(IConfiguration configuration)
+        public Startup() 
         {
-            _configuration = configuration;
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddYamlFile("configuration.yml", optional: false, reloadOnChange: true);
+            Configuration = builder.Build();
         }
+
+        public IConfiguration Configuration { get; }
 
         [Obsolete]
         public void ConfigureServices(IServiceCollection services)
@@ -35,9 +41,15 @@ namespace Insura.Media.Solusi
             services.AddSwaggerGen();
             services.AddMemoryCache();
 
-            var connectionString = _configuration.GetConnectionString("DataContext");
-            services.AddDbContext<DataContext>(options =>
-                options.UseSqlServer(connectionString));
+            var dbConnection = new DbConnection();
+            Configuration.Bind("dbConnection", dbConnection);
+            services.RegisterDBConnection(dbConnection);
+
+            services.AddDbContext<DataContext>((provider, options) =>
+            {
+                var connectionString = provider.GetRequiredService<DbConnection>().ConnectionString;
+                options.UseSqlServer(connectionString);
+            });
 
             services.AddScoped<IUserService, UserServiceImpl>();
             services.AddScoped<ICalculatorService, CalculatorServiceImpl>();
